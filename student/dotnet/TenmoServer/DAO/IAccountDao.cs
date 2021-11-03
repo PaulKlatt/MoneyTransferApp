@@ -7,6 +7,6 @@ namespace TenmoServer.DAO
 {
     public interface IAccountDao
     {
-        public decimal GetBalance();
+        public decimal GetBalance(int accountId);
     }
 }
