@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TenmoClient.Models;
+using TenmoServer.Models;
 
 namespace TenmoClient
 {
@@ -8,6 +9,8 @@ namespace TenmoClient
     {
         private static readonly ConsoleService consoleService = new ConsoleService();
         private static readonly AuthService authService = new AuthService();
+        private static readonly ApiService apiService = new ApiService();
+        private static ApiUser user;
 
         static void Main(string[] args)
         {
@@ -35,10 +38,14 @@ namespace TenmoClient
                         while (!UserService.IsLoggedIn()) //will keep looping until user is logged in
                         {
                             LoginUser loginUser = consoleService.PromptForLogin();
-                            ApiUser user = authService.Login(loginUser);
+                            user = authService.Login(loginUser);
                             if (user != null)
                             {
                                 UserService.SetLogin(user);
+                            }
+                            else
+                            {
+                                break;
                             }
                         }
                     }
@@ -62,8 +69,10 @@ namespace TenmoClient
                         Console.WriteLine("Invalid selection.");
                     }
                 }
-
-                MenuSelection();
+                if (UserService.IsLoggedIn())
+                {
+                    MenuSelection();
+                }
             }
         }
 
@@ -90,6 +99,26 @@ namespace TenmoClient
                 }
                 else if (menuSelection == 1)
                 {
+                    try
+                    {
+                        List<Account> accounts = apiService.ViewAccountsByUserId(user.UserId);
+                        consoleService.PrintAccounts(accounts);
+
+                        if(accounts.Count > 1)
+                        {
+                            int accountSelection = -1;
+                            while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection <= 0 || accountSelection > accounts.Count)
+                            {
+                                Console.WriteLine("Invalid input. Please enter number of an account listed above.");
+                            }
+                            Console.WriteLine($"Your current balance in {accounts[accountSelection].AccountId} is {accounts[accountSelection].Balance} TE bucks.");
+                        }
+
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
 
                 }
                 else if (menuSelection == 2)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TenmoClient.Models;
+using TenmoServer.Models;
 
 namespace TenmoClient
 {
@@ -69,6 +70,34 @@ namespace TenmoClient
             while (key.Key != ConsoleKey.Enter);
             Console.WriteLine("");
             return pass;
+        }
+
+        public void PrintAccounts(List<Account> accounts)
+        {
+            if (accounts.Count < 1)
+            {
+                Console.WriteLine("You currently have no accounts.");
+            }
+            else if (accounts.Count == 1)
+            {
+                Console.WriteLine($"The current balance in your account is {accounts[0].Balance} TE bucks.");
+            }
+            else
+            {
+                Console.WriteLine("ACCOUNTS:");
+                int validChoice = 1;
+                foreach(Account acc in accounts)
+                {
+                    Console.WriteLine($"{validChoice}: {acc.AccountId}");
+                    validChoice++;
+                }
+                Console.WriteLine("Please choose one of your accounts.");
+            }
+        }
+
+        public void PrintAccounts()
+        {
+           
         }
     }
 }
