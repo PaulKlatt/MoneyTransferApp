@@ -2,13 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-<<<<<<< HEAD
-
-namespace TenmoServer.DAO
-{
-    public class AccountSqlDaocs
-    {
-=======
 using System.Data.SqlClient;
 using TenmoServer.Models;
 
@@ -101,11 +94,11 @@ namespace TenmoServer.DAO
             {
                 AccountId = Convert.ToInt32(reader["account_id"]),
                 UserId = Convert.ToInt32(reader["user_id"]),
-                Balance = Convert.ToInt32(reader["balance"])
+                Balance = Convert.ToDecimal(reader["balance"])
             };
 
             return account;
         }
->>>>>>> ee5e71762521729465f06b586ac35826ffd0cae3
+
     }
 }

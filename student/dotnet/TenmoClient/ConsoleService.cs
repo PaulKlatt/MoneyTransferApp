@@ -95,9 +95,27 @@ namespace TenmoClient
             }
         }
 
-        public void PrintAccounts()
+        public void PrintUserList(List<UserInfo> usersInfo, ApiUser user)
         {
-           
+            
+            if (usersInfo.Count <= 1)
+            {
+                Console.WriteLine("No valid users to send funds.");
+            }
+            else
+            {
+                Console.WriteLine("USERS:");
+                int validChoice = 1;
+                foreach (UserInfo u in usersInfo)
+                {
+                    if(u.UserId != user.UserId)
+                    {
+                        Console.WriteLine($"{validChoice}: {u.UserId} - {u.Username}");
+                        validChoice++;
+                    }
+                }
+                Console.WriteLine("Please choose a user to receive your TE bucks.");
+            }
         }
     }
 }

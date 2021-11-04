@@ -34,6 +34,5 @@ namespace TenmoServer.Controllers
             return Ok(accounts);
             // Maybe return full Account?
         }
-
     }
 }

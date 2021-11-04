@@ -14,6 +14,7 @@ namespace TenmoClient
     {
         private readonly static string API_BASE_URL = "https://localhost:44315/";
         private readonly static string ACCOUNTS_URL = API_BASE_URL + "accounts";
+        private readonly static string USERS_URL = API_BASE_URL + "users";
         private readonly IRestClient client = new RestClient();
         //private static ApiUser user = new ApiUser();
 
@@ -21,6 +22,18 @@ namespace TenmoClient
         {
             RestRequest request = new RestRequest($"{ACCOUNTS_URL}/{userId}");
             IRestResponse<List<Account>> response = client.Get<List<Account>>(request);
+
+            if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
+            {
+                ProcessErrorResponse(response);
+            }
+            return response.Data;
+        }
+
+        public List<UserInfo> GetAllUsers()
+        {
+            RestRequest request = new RestRequest(USERS_URL);
+            IRestResponse<List<UserInfo>> response = client.Get<List<UserInfo>>(request);
 
             if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
             {
