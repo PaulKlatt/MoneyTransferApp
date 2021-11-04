@@ -16,9 +16,9 @@ namespace TenmoServer.DAO
             connectionString = dbConnectionString;
         }
 
-        public decimal GetBalance(int accountId)
+        public List<Account> GetAccountByAccountId(int userId)
         {
-            Account myAccount = new Account();
+            List<Account> accounts = new List<Account>();
 
             try
             {
@@ -26,13 +26,13 @@ namespace TenmoServer.DAO
                 {
                     conn.Open();
 
-                    SqlCommand cmd = new SqlCommand("SELECT account_id, user_id, balance FROM dbo.accounts WHERE account_id = @account_id", conn);
-                    cmd.Parameters.AddWithValue("@account_id", accountId);
+                    SqlCommand cmd = new SqlCommand("SELECT account_id, user_id, balance FROM dbo.accounts WHERE user_id = @user_id", conn);
+                    cmd.Parameters.AddWithValue("@user_id", userId);
                     SqlDataReader reader = cmd.ExecuteReader();
 
-                    if (reader.Read())
+                    while (reader.Read())
                     {
-                        myAccount = GetAccountFromReader(reader);
+                        accounts.Add(GetAccountFromReader(reader));
                     }
                 }
             }
@@ -41,7 +41,7 @@ namespace TenmoServer.DAO
                 throw;
             }
 
-            return myAccount.Balance;
+            return accounts;
         }
 
 
