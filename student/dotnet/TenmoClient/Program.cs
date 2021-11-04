@@ -111,7 +111,7 @@ namespace TenmoClient
                             {
                                 Console.WriteLine("Invalid input. Please enter number of an account listed above.");
                             }
-                            Console.WriteLine($"Your current balance in {accounts[accountSelection].AccountId} is {accounts[accountSelection].Balance} TE bucks.");
+                            Console.WriteLine($"Your current balance in {accounts[accountSelection - 1].AccountId} is {accounts[accountSelection - 1].Balance} TE bucks.");
                         }
 
                     }
@@ -131,7 +131,15 @@ namespace TenmoClient
                 }
                 else if (menuSelection == 4)
                 {
-
+                    try
+                    {
+                        List<UserInfo> usersInfo = apiService.GetAllUsers();
+                        consoleService.PrintUserList(usersInfo, user);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
                 else if (menuSelection == 5)
                 {

@@ -16,14 +16,14 @@ namespace TenmoClient
         {
             Console.WriteLine("");
             Console.Write("Please enter transfer ID to " + action + " (0 to cancel): ");
-            if (!int.TryParse(Console.ReadLine(), out int auctionId))
+            if (!int.TryParse(Console.ReadLine(), out int auctionId))//this declares a new variable
             {
                 Console.WriteLine("Invalid input. Only input a number.");
                 return 0;
             }
             else
             {
-                return auctionId;
+                return auctionId;//only spits this out as a boolean if successful
             }
         }
 
@@ -95,9 +95,27 @@ namespace TenmoClient
             }
         }
 
-        public void PrintAccounts()
+        public void PrintUserList(List<UserInfo> usersInfo, ApiUser user)
         {
-           
+            
+            if (usersInfo.Count <= 1)
+            {
+                Console.WriteLine("No valid users to send funds.");
+            }
+            else
+            {
+                Console.WriteLine("USERS:");
+                int validChoice = 1;
+                foreach (UserInfo u in usersInfo)
+                {
+                    if(u.UserId != user.UserId)
+                    {
+                        Console.WriteLine($"{validChoice}: {u.UserId} - {u.Username}");
+                        validChoice++;
+                    }
+                }
+                Console.WriteLine("Please choose a user to receive your TE bucks.");
+            }
         }
     }
 }
