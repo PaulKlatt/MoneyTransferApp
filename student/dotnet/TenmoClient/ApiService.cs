@@ -45,8 +45,8 @@ namespace TenmoClient
         //Account accountFrom, Account accountTo, decimal amount
         public Transfer SendAmount(Transfer transfer)
         {
-            transfer.TransferStatusDesc = "Approve";
-            transfer.TransferTypeDesc = "Send";
+            transfer.TransferStatusId = 2;
+            transfer.TransferTypeId = 2;
             RestRequest request = new RestRequest();
             IRestResponse<Transfer> response = client.Post<Transfer>(request);
 

@@ -11,13 +11,13 @@ namespace TenmoServer.Models
         public int? TransferId { get; set; }
 
         [Required]
-        public string TransferTypeDesc { get; set; }
+        public int TransferTypeId { get; set; }
         [Required]
-        public string TransferStatusDesc { get; set; }
+        public int TransferStatusId { get; set; }
         [Required]
-        public int AccountFrom { get; set; }
+        public int FromAccount { get; set; }
         [Required]
-        public int AccountTo { get; set; }
+        public int ToAccount { get; set; }
         // Assuming it follows money convention
         [Range((double)0.01, double.PositiveInfinity)]
         public decimal Amount { get; set; }

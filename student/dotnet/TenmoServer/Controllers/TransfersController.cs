@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TenmoServer.DAO;
 using TenmoServer.Models;
+using System.Transactions;
 
 namespace TenmoServer.Controllers
 {
@@ -20,13 +21,13 @@ namespace TenmoServer.Controllers
             transferDao = _transferDao;
         }
 
-        [HttpPost]
+        [HttpPost("send")]
         //[Authorize]
-        public Transfer CreateSendTransaction(Transfer newTransfer)
+        public Transfer SendTransactionScope(Transfer sentTransfer)
         {
             // How to do transactions in c#?
-
-            return null;
+            Transfer newTransfer = transferDao.SendTransactionScope(sentTransfer);
+            return newTransfer;
         }
     }
 }
