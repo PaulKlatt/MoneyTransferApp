@@ -133,8 +133,8 @@ namespace TenmoClient
                 {
                     try
                     {
-                        Account receiverAccount;
-                        Account userAccount;
+                        Account receiverAccount = new Account();
+                        Account userAccount = new Account();
                         decimal amount;
                         //Get the userAccount
                         List<Account> userAccounts = apiService.ViewAccountsByUserId(user.UserId);
@@ -200,7 +200,15 @@ namespace TenmoClient
                         }
                         else
                         {
+                            Transfer transfer = new Transfer();
+                            transfer.AccountTo = (int)receiverAccount.AccountId;
+                            transfer.AccountFrom = (int)userAccount.AccountId;
+                            transfer.Amount = amount;
                             //call api service that goes to post endpoint
+                            Transfer createdTransfer = apiService.SendAmount(transfer);
+
+                            //call console service, feed it created transfer
+                            consoleService.PrintNewTransfer(createdTransfer, receiverAccount.UserId, user.UserId);
                         }
 
 

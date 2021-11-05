@@ -102,6 +102,7 @@ namespace TenmoClient
             {
                 Console.WriteLine("USERS:");
                 int validChoice = 1;
+                UserInfo userToRemove = new UserInfo();
                 foreach (UserInfo u in usersInfo)
                 {
                     if(u.UserId != user.UserId)
@@ -109,9 +110,49 @@ namespace TenmoClient
                         Console.WriteLine($"{validChoice}: {u.UserId} - {u.Username}");
                         validChoice++;
                     }
+                    else
+                    {
+                        userToRemove = u;
+                    }
+                    
                 }
+                usersInfo.Remove(userToRemove);
                 Console.WriteLine("Please choose a user to receive your TE bucks.");
             }
+        }
+
+        public void PrintNewTransfer(Transfer transfer, int recieverId, int senderId)
+        {
+            Console.WriteLine("TRANSFER SUCCESSFUL!");
+            Console.WriteLine($"Transfer Id: {transfer.TransferId}");
+
+            if (transfer.TransferTypeId == 1)
+            {
+                Console.WriteLine("Transfer type: request");
+            }
+            else if (transfer.TransferTypeId == 2)
+            {
+                Console.WriteLine("Tranfer type: send");
+            }
+
+            if (transfer.TransferStatusId == 1)
+            {
+                Console.WriteLine("Transfer status: pending");
+            }
+            else if (transfer.TransferStatusId == 2)
+            {
+                Console.WriteLine("Transfer status: approved");
+            }
+            else if (transfer.TransferStatusId == 3)
+            {
+                Console.WriteLine("Transfer status: rejected");
+            }
+
+            Console.WriteLine($"Receiver: {recieverId}");
+            Console.WriteLine($"Account To: {transfer.AccountTo}");
+            Console.WriteLine($"Sender: {senderId}");
+            Console.WriteLine($"Account From: {transfer.AccountFrom}");
+            Console.WriteLine($"Amount: {transfer.Amount}");
         }
     }
 }

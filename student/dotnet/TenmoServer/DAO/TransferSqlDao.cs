@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -28,14 +29,14 @@ namespace TenmoServer.DAO
                         connection.Open();
 
                         SqlCommand command = new SqlCommand("UPDATE dbo.accounts SET balance = balance - @amount " +
-                                                            "WHERE account_id = @fromAccount " +
+                                                            "WHERE account_id = @accountFrom " +
                                                             "UPDATE dbo.accounts SET balance = balance + @amount " +
-                                                            "WHERE account_id = @toAccount " +
+                                                            "WHERE account_id = @accountTo " +
                                                             "INSERT INTO dbo.transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                                                             "OUTPUT INSERTED.transfer_id " +
-                                                            "VALUES (2, 2, @fromAccount, @toAccount, @amount)", connection);
-                        command.Parameters.AddWithValue("@fromAccount", transfer.AccountFrom);
-                        command.Parameters.AddWithValue("@toAccount", transfer.AccountTo);
+                                                            "VALUES (2, 2, @accountFrom, @accountTo, @amount)", connection);
+                        command.Parameters.AddWithValue("@accountFrom", transfer.AccountFrom);
+                        command.Parameters.AddWithValue("@accountTo", transfer.AccountTo);
                         command.Parameters.AddWithValue("@amount", transfer.Amount);
 
                         int newId = (int)command.ExecuteScalar();
