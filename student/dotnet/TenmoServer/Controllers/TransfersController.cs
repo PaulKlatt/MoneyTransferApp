@@ -23,11 +23,11 @@ namespace TenmoServer.Controllers
 
         [HttpPost("send")]
         //[Authorize]
-        public Transfer SendTransactionScope(Transfer sentTransfer)
+        public ActionResult<Transfer> SendTransactionScope(Transfer sentTransfer)
         {
             // How to do transactions in c#?
             Transfer newTransfer = transferDao.SendTransactionScope(sentTransfer);
-            return newTransfer;
+            return Created($"/transfers/{newTransfer.TransferId}", newTransfer);
         }
     }
 }

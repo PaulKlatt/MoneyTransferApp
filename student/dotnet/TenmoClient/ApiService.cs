@@ -15,7 +15,7 @@ namespace TenmoClient
         private readonly static string API_BASE_URL = "https://localhost:44315/";
         private readonly static string ACCOUNTS_URL = API_BASE_URL + "accounts";
         private readonly static string USERS_URL = API_BASE_URL + "users";
-        private readonly static string TRANSACTIONS_URL = API_BASE_URL + "transactions";
+        private readonly static string TRANSFERS_URL = API_BASE_URL + "transfers";
         private readonly IRestClient client = new RestClient();
         //private static ApiUser user = new ApiUser();
 
@@ -47,7 +47,8 @@ namespace TenmoClient
         {
             transfer.TransferStatusId = 2;
             transfer.TransferTypeId = 2;
-            RestRequest request = new RestRequest();
+            RestRequest request = new RestRequest(TRANSFERS_URL + "/send");
+            request.AddJsonBody(transfer);
             IRestResponse<Transfer> response = client.Post<Transfer>(request);
 
             if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
