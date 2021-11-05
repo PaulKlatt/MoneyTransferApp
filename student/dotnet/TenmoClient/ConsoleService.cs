@@ -76,12 +76,8 @@ namespace TenmoClient
         {
             if (accounts.Count < 1)
             {
-                Console.WriteLine("You currently have no accounts.");
-            }
-            else if (accounts.Count == 1)
-            {
-                Console.WriteLine($"The current balance in your account is {accounts[0].Balance} TE bucks.");
-            }
+                Console.WriteLine("There are currently no accounts.");
+            }           
             else
             {
                 Console.WriteLine("ACCOUNTS:");
@@ -91,7 +87,7 @@ namespace TenmoClient
                     Console.WriteLine($"{validChoice}: {acc.AccountId}");
                     validChoice++;
                 }
-                Console.WriteLine("Please choose one of your accounts.");
+                Console.WriteLine("Please choose one of the accounts listed above.");
             }
         }
 

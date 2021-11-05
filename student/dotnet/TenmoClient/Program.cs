@@ -19,7 +19,7 @@ namespace TenmoClient
 
         private static void Run()
         {
-            while(true)
+            while (true)
             {
                 int loginRegister = -1;
                 while (loginRegister != 1 && loginRegister != 2)
@@ -104,18 +104,18 @@ namespace TenmoClient
                         List<Account> accounts = apiService.ViewAccountsByUserId(user.UserId);
                         consoleService.PrintAccounts(accounts);
 
-                        if(accounts.Count > 1)
+                        if (accounts.Count >= 1)
                         {
                             int accountSelection = -1;
                             while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection <= 0 || accountSelection > accounts.Count)
                             {
-                                Console.WriteLine("Invalid input. Please enter number of an account listed above.");
+                                Console.WriteLine("Invalid input. Please enter the number of an account listed above.");
                             }
                             Console.WriteLine($"Your current balance in {accounts[accountSelection - 1].AccountId} is {accounts[accountSelection - 1].Balance} TE bucks.");
                         }
 
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
                     }
@@ -133,9 +133,79 @@ namespace TenmoClient
                 {
                     try
                     {
+                        Account receiverAccount;
+                        Account userAccount;
+                        decimal amount;
+                        //Get the userAccount
+                        List<Account> userAccounts = apiService.ViewAccountsByUserId(user.UserId);
+                        if (userAccounts.Count >= 1)
+                        {
+                            consoleService.PrintAccounts(userAccounts);
+                            int accountSelection = -1;
+                            while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection <= 0 || accountSelection > userAccounts.Count)
+                            {
+                                Console.WriteLine("Invalid input. Please enter the number of an account listed above.");
+                            }
+                            userAccount = userAccounts[accountSelection - 1];
+                            Console.WriteLine($"You will be sending from {userAccount.AccountId}.  It's current balance is {userAccount.Balance}.");
+                            
+                        }
+                        else
+                        {
+                            // Maybe come back and replace with a custom exception?
+                            throw new Exception("You have no valid accounts from which to send TE bucks.");
+                        }
+                        //Get the receiverAccount
                         List<UserInfo> usersInfo = apiService.GetAllUsers();
                         consoleService.PrintUserList(usersInfo, user);
+
+                        if (usersInfo.Count >= 1)
+                        {
+                            int userSelection = -1;
+                            while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || userSelection > usersInfo.Count)
+                            {
+                                Console.WriteLine("Invalid input. Please enter the number of a user listed above.");
+                            }
+
+                            List<Account> receiverAccounts = apiService.ViewAccountsByUserId(usersInfo[userSelection - 1].UserId);
+
+                            consoleService.PrintAccounts(receiverAccounts);
+                            if (receiverAccounts.Count >= 1)
+                            {
+                                int accountSelection = -1;
+                                while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection <= 0 || accountSelection > receiverAccounts.Count)
+                                {
+                                    Console.WriteLine("Invalid input. Please enter the number of an account listed above.");
+                                }
+                                receiverAccount = receiverAccounts[accountSelection - 1];
+                            }
+                            else
+                            {
+                                // Maybe custom ex
+                                throw new Exception("The user has no valid accounts to receive TE bucks.");
+                            }
+                        }
+                        
+                        //Get the amount to send
+                        Console.WriteLine("Please enter an amount to send.");
+                        
+                        while (!decimal.TryParse(Console.ReadLine(), out amount) || amount <= 0 || amount > userAccount.Balance)
+                        {
+                            Console.WriteLine("Invalid input. Please enter a number less than or equal to your current balance or enter 0 to cancel.");
+                        }
+                        if (amount == 0)
+                        {
+                            // Not sure what message to put here, not really an error, just needed to get to the catch?
+                            throw new Exception();
+                        }
+                        else
+                        {
+                            //call api service that goes to post endpoint
+                        }
+
+
                     }
+
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
