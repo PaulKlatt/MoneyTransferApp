@@ -58,6 +58,18 @@ namespace TenmoClient
             return response.Data;
         }
 
+        public List<Transfer> GetTransfersByUserId(int userId)
+        {
+            RestRequest request = new RestRequest(TRANSFERS_URL + $"/users/{userId}");
+            IRestResponse<List<Transfer>> response = client.Get<List<Transfer>>(request);
+
+            if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
+            {
+                ProcessErrorResponse(response);
+            }
+            return response.Data;
+        }
+
         public void ProcessErrorResponse(IRestResponse response)
         {
             if (response.ResponseStatus != ResponseStatus.Completed)

@@ -123,7 +123,21 @@ namespace TenmoClient
                 }
                 else if (menuSelection == 2)
                 {
+                    try
+                    {
+                        
+                        //Maybe were only passing a list of account id's, but this uses our already made methods
+                        // Get the list of transfers
+                        
+                        List<Transfer> myTransfers = apiService.GetTransfersByUserId(user.UserId);
 
+                        //call console service to print it
+                        consoleService.PrintAllUserTransfers(myTransfers);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
                 else if (menuSelection == 3)
                 {

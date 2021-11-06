@@ -29,5 +29,14 @@ namespace TenmoServer.Controllers
             Transfer newTransfer = transferDao.SendTransactionScope(sentTransfer);
             return Created($"/transfers/{newTransfer.TransferId}", newTransfer);
         }
+
+        [HttpGet("users/{userId}")]
+        //[Authorize]
+        public ActionResult<List<Transfer>> GetTransfersByUserId(int userId)
+        {
+
+            List<Transfer> myTransfers = transferDao.GetTransfersByUserId(userId);
+            return Ok(myTransfers);
+        }
     }
 }
