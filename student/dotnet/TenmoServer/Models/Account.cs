@@ -17,4 +17,5 @@ namespace TenmoServer.Models
         [Range((double)0.00M, double.PositiveInfinity, ErrorMessage = "Balance is required.")]
         public decimal Balance { get; set; }
     }
+
 }

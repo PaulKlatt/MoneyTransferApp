@@ -154,5 +154,39 @@ namespace TenmoClient
             Console.WriteLine($"Account From: {transfer.AccountFrom}");
             Console.WriteLine($"Amount: {transfer.Amount}");
         }
+
+        public void PrintAllUserTransfers(List<Transfer> myTransfers)
+        {
+            Console.WriteLine("TRANSFERS:");
+            foreach (Transfer transfer in myTransfers)
+            {
+                Console.WriteLine($"Transfer Id: {transfer.TransferId}");
+
+                if (transfer.TransferTypeId == 1)
+                {
+                    Console.WriteLine("Transfer type: request");
+                }
+                else if (transfer.TransferTypeId == 2)
+                {
+                    Console.WriteLine("Tranfer type: send");
+                }
+
+                if (transfer.TransferStatusId == 1)
+                {
+                    Console.WriteLine("Transfer status: pending");
+                }
+                else if (transfer.TransferStatusId == 2)
+                {
+                    Console.WriteLine("Transfer status: approved");
+                }
+                else if (transfer.TransferStatusId == 3)
+                {
+                    Console.WriteLine("Transfer status: rejected");
+                }
+                Console.WriteLine($"Account To: {transfer.AccountTo}");
+                Console.WriteLine($"Account From: {transfer.AccountFrom}");
+                Console.WriteLine($"Amount: {transfer.Amount}");
+            }
+        }
     }
 }
