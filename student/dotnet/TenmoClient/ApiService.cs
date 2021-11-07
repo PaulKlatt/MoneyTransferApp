@@ -70,6 +70,19 @@ namespace TenmoClient
             return response.Data;
         }
 
+        public Transfer MakeNewRequest(Transfer requestTransfer)
+        {
+            RestRequest request = new RestRequest(TRANSFERS_URL + "/request");
+            request.AddJsonBody(requestTransfer);
+            IRestResponse<Transfer> response = client.Post<Transfer>(request);
+
+            if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
+            {
+                ProcessErrorResponse(response);
+            }
+            return response.Data;
+        }
+
         public void ProcessErrorResponse(IRestResponse response)
         {
             if (response.ResponseStatus != ResponseStatus.Completed)

@@ -12,5 +12,7 @@ namespace TenmoServer.DAO
         public Transfer SendTransactionScope(Transfer transfer);
 
         public List<Transfer> GetTransfersByUserId(int userId);
+
+        public Transfer MakeTransferRequest(Transfer requestTransfer);
     }
 }

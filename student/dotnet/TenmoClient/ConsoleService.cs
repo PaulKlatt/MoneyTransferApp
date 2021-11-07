@@ -71,7 +71,6 @@ namespace TenmoClient
             Console.WriteLine("");
             return pass;
         }
-
         public void PrintAccounts(List<Account> accounts)
         {
             if (accounts.Count < 1)
@@ -117,7 +116,20 @@ namespace TenmoClient
 
                 }
                 usersInfo.Remove(userToRemove);
-                Console.WriteLine("Please choose a user to receive your TE bucks.");
+            }
+        }
+
+        public void PromptForAccountThenPrintAccountBalance(List<Account> accounts)
+        {
+            if (accounts.Count >= 1)
+            {
+                int accountSelection = -1;
+                while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection <= 0 || accountSelection > accounts.Count)
+                {
+                    Console.WriteLine("Invalid input. Please enter the number of an account listed above.");
+                }
+                Console.Clear();
+                Console.WriteLine($"Your current balance in {accounts[accountSelection - 1].AccountId} is {accounts[accountSelection - 1].Balance:C}.");
             }
         }
 
@@ -157,6 +169,7 @@ namespace TenmoClient
 
         public void PrintAllUserTransfers(List<Transfer> myTransfers)
         {
+            Console.Clear();
             Console.WriteLine("TRANSFERS:");
             if (myTransfers.Count == 0)
             {
@@ -164,15 +177,17 @@ namespace TenmoClient
             }
             else
             {
+                Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 foreach (Transfer transfer in myTransfers)
                 {
                     Console.WriteLine($"Transfer Id: {transfer.TransferId}");
                     Console.WriteLine($"Account To: {transfer.AccountTo}");
                     Console.WriteLine($"Account From: {transfer.AccountFrom}");
                     Console.WriteLine($"Amount: {transfer.Amount:C}");
-                    Console.WriteLine("");
-                    Console.WriteLine("Please select a transfer ID from above or select 0 to exit.");
+                    Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 }
+                Console.WriteLine("");
+                Console.WriteLine("Please select a transfer ID from above or select 0 to exit.");
             }
         }
         public int PromptForTransferId(List<Transfer> myTransfers)
@@ -201,9 +216,50 @@ namespace TenmoClient
             }
             return 0;
         }
+
+        public Account PromptForAccount(List<Account> accounts, int type, bool isUser)
+        {
+            int accountSelection = -1;
+            Account selectedAccount = new Account();
+            while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection < 0 || accountSelection > accounts.Count)
+            {
+                Console.WriteLine("Invalid input. Please enter the number of an account listed above or enter 0 to exit.");
+            }
+            if (accountSelection != 0)
+            {
+                selectedAccount = accounts[accountSelection - 1];
+                if (isUser == true)
+                {
+                    if (type == 1)
+                    {
+                        Console.WriteLine($"You will be requesting TE bucks for {selectedAccount.AccountId}.");
+                    }
+                    else if (type == 2)
+                    {
+                        Console.WriteLine($"You will be sending from {selectedAccount.AccountId}.  It's current balance is {selectedAccount.Balance}.");
+                    }
+                }
+                else
+                {
+                    if (type == 1)
+                    {
+                        Console.WriteLine($"You will be requesting TE bucks from {selectedAccount.AccountId}.");
+                    }
+                    else if (type == 2)
+                    {
+                        Console.WriteLine($"You will be sending to {selectedAccount.AccountId}.");
+                    }
+                }
+            }
+            return selectedAccount;
+        }
+
+
         public void PrintSelectedTransfer(Transfer transfer)
         {
+            Console.Clear();
             Console.WriteLine("TRANSFER SELECTED:");
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             Console.WriteLine($"Transfer Id: {transfer.TransferId}");
 
             if (transfer.TransferTypeId == 1)
@@ -230,6 +286,7 @@ namespace TenmoClient
             Console.WriteLine($"Account To: {transfer.AccountTo}");
             Console.WriteLine($"Account From: {transfer.AccountFrom}");
             Console.WriteLine($"Amount: {transfer.Amount:C}");
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         }
     }
 }
