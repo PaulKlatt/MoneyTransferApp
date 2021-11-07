@@ -62,6 +62,42 @@ namespace TenmoServer.DAO
             return newTransfer;
         }
 
+        public Transfer MakeTransferRequest(Transfer requestTransfer)
+        {
+            Transfer newTransfer = new Transfer();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    SqlCommand command = new SqlCommand("INSERT INTO dbo.transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                                                        "OUTPUT INSERTED.transfer_id " +
+                                                        "VALUES (1, 1, @accountFrom, @accountTo, @amount)", connection);
+                    command.Parameters.AddWithValue("@accountFrom", requestTransfer.AccountFrom);
+                    command.Parameters.AddWithValue("@accountTo", requestTransfer.AccountTo);
+                    command.Parameters.AddWithValue("@amount", requestTransfer.Amount);
+
+                    int newId = (int)command.ExecuteScalar();
+
+                    SqlCommand command2 = new SqlCommand("SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                                                        "FROM dbo.transfers " +
+                                                        "WHERE transfer_id = @newId", connection);
+                    command2.Parameters.AddWithValue("@newId", newId);
+
+                    SqlDataReader reader = command2.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        newTransfer = GetTransferFromReader(reader);
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw ex;
+            }
+            return newTransfer;
+        }
         public List<Transfer> GetTransfersByUserId(int userId)
         {
             List<Transfer> myTransfers = new List<Transfer>();

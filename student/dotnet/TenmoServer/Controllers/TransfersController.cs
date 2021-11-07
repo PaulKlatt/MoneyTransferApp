@@ -30,6 +30,13 @@ namespace TenmoServer.Controllers
             return Created($"/transfers/{newTransfer.TransferId}", newTransfer);
         }
 
+        [HttpPost("request")]
+        public ActionResult<Transfer> MakeTransferRequest(Transfer requestTransfer)
+        {
+            Transfer newTransfer = transferDao.MakeTransferRequest(requestTransfer);
+            return Created($"/transfers/{newTransfer.TransferId}", newTransfer);
+        }
+
         [HttpGet("users/{userId}")]
         //[Authorize]
         public ActionResult<List<Transfer>> GetTransfersByUserId(int userId)
