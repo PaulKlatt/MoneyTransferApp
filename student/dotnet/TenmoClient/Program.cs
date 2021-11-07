@@ -79,10 +79,19 @@ namespace TenmoClient
         private static void MenuSelection()
         {
             int menuSelection = -1;
+            bool firstTime = true;
             while (menuSelection != 0)
             {
                 Console.WriteLine("");
-                Console.WriteLine("Welcome to TEnmo! Please make a selection: ");
+                if (firstTime)
+                {
+                    Console.WriteLine("Welcome to TEnmo! Please make a selection: ");
+                    firstTime = false;
+                }
+                else 
+                {
+                    Console.WriteLine("Please choose another selection.");
+                }
                 Console.WriteLine("1: View your current balance");
                 Console.WriteLine("2: View your past transfers");
                 Console.WriteLine("3: View your pending requests");
@@ -111,7 +120,7 @@ namespace TenmoClient
                             {
                                 Console.WriteLine("Invalid input. Please enter the number of an account listed above.");
                             }
-                            Console.WriteLine($"Your current balance in {accounts[accountSelection - 1].AccountId} is {accounts[accountSelection - 1].Balance} TE bucks.");
+                            Console.WriteLine($"Your current balance in {accounts[accountSelection - 1].AccountId} is {accounts[accountSelection - 1].Balance:C}.");
                         }
 
                     }
@@ -131,8 +140,24 @@ namespace TenmoClient
                         
                         List<Transfer> myTransfers = apiService.GetTransfersByUserId(user.UserId);
 
-                        //call console service to print it
+                        //call console service to print list of transfers
                         consoleService.PrintAllUserTransfers(myTransfers);
+
+                        //prompt for user selection of transfer id
+                        int selectedTransferId = consoleService.PromptForTransferId(myTransfers);
+                        if (selectedTransferId != 0)
+                        {
+                            Transfer selectedTransfer = new Transfer();
+                            foreach (Transfer transfer in myTransfers)
+                            {
+                                if (transfer.TransferId == selectedTransferId)
+                                {
+                                    selectedTransfer = transfer;
+                                }
+                            }
+                            //call console service to print transfer id details
+                            consoleService.PrintSelectedTransfer(selectedTransfer);
+                        }
                     }
                     catch (Exception ex)
                     {

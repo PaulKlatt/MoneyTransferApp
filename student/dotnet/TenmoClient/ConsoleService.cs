@@ -77,12 +77,12 @@ namespace TenmoClient
             if (accounts.Count < 1)
             {
                 Console.WriteLine("There are currently no accounts.");
-            }           
+            }
             else
             {
                 Console.WriteLine("ACCOUNTS:");
                 int validChoice = 1;
-                foreach(Account acc in accounts)
+                foreach (Account acc in accounts)
                 {
                     Console.WriteLine($"{validChoice}: {acc.AccountId}");
                     validChoice++;
@@ -93,7 +93,7 @@ namespace TenmoClient
 
         public void PrintUserList(List<UserInfo> usersInfo, ApiUser user)
         {
-            
+
             if (usersInfo.Count <= 1)
             {
                 Console.WriteLine("No valid users to send funds.");
@@ -105,7 +105,7 @@ namespace TenmoClient
                 UserInfo userToRemove = new UserInfo();
                 foreach (UserInfo u in usersInfo)
                 {
-                    if(u.UserId != user.UserId)
+                    if (u.UserId != user.UserId)
                     {
                         Console.WriteLine($"{validChoice}: {u.UserId} - {u.Username}");
                         validChoice++;
@@ -114,7 +114,7 @@ namespace TenmoClient
                     {
                         userToRemove = u;
                     }
-                    
+
                 }
                 usersInfo.Remove(userToRemove);
                 Console.WriteLine("Please choose a user to receive your TE bucks.");
@@ -152,41 +152,84 @@ namespace TenmoClient
             Console.WriteLine($"Account To: {transfer.AccountTo}");
             Console.WriteLine($"Sender: {senderId}");
             Console.WriteLine($"Account From: {transfer.AccountFrom}");
-            Console.WriteLine($"Amount: {transfer.Amount}");
+            Console.WriteLine($"Amount: {transfer.Amount:C}");
         }
 
         public void PrintAllUserTransfers(List<Transfer> myTransfers)
         {
             Console.WriteLine("TRANSFERS:");
-            foreach (Transfer transfer in myTransfers)
+            if (myTransfers.Count == 0)
             {
-                Console.WriteLine($"Transfer Id: {transfer.TransferId}");
-
-                if (transfer.TransferTypeId == 1)
-                {
-                    Console.WriteLine("Transfer type: request");
-                }
-                else if (transfer.TransferTypeId == 2)
-                {
-                    Console.WriteLine("Tranfer type: send");
-                }
-
-                if (transfer.TransferStatusId == 1)
-                {
-                    Console.WriteLine("Transfer status: pending");
-                }
-                else if (transfer.TransferStatusId == 2)
-                {
-                    Console.WriteLine("Transfer status: approved");
-                }
-                else if (transfer.TransferStatusId == 3)
-                {
-                    Console.WriteLine("Transfer status: rejected");
-                }
-                Console.WriteLine($"Account To: {transfer.AccountTo}");
-                Console.WriteLine($"Account From: {transfer.AccountFrom}");
-                Console.WriteLine($"Amount: {transfer.Amount}");
+                Console.WriteLine("You currently have no transfers.");
             }
+            else
+            {
+                foreach (Transfer transfer in myTransfers)
+                {
+                    Console.WriteLine($"Transfer Id: {transfer.TransferId}");
+                    Console.WriteLine($"Account To: {transfer.AccountTo}");
+                    Console.WriteLine($"Account From: {transfer.AccountFrom}");
+                    Console.WriteLine($"Amount: {transfer.Amount:C}");
+                    Console.WriteLine("");
+                    Console.WriteLine("Please select a transfer ID from above or select 0 to exit.");
+                }
+            }
+        }
+        public int PromptForTransferId(List<Transfer> myTransfers)
+        {
+            if (myTransfers.Count >= 1)
+            {
+                List<int> transferIds = new List<int>();
+                foreach (Transfer transfer in myTransfers)
+                {
+                    transferIds.Add((int)transfer.TransferId);
+                }
+
+                int userSelection = -1;
+                while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || !transferIds.Contains(userSelection))
+                {
+                    Console.WriteLine("Invalid input. Please enter the number of a transfer listed above or enter 0 to exit.");
+                }
+                if (userSelection == 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return userSelection;
+                }  
+            }
+            return 0;
+        }
+        public void PrintSelectedTransfer(Transfer transfer)
+        {
+            Console.WriteLine("TRANSFER SELECTED:");
+            Console.WriteLine($"Transfer Id: {transfer.TransferId}");
+
+            if (transfer.TransferTypeId == 1)
+            {
+                Console.WriteLine("Transfer type: request");
+            }
+            else if (transfer.TransferTypeId == 2)
+            {
+                Console.WriteLine("Tranfer type: send");
+            }
+            if (transfer.TransferStatusId == 1)
+            {
+                Console.WriteLine("Transfer status: pending");
+            }
+            else if (transfer.TransferStatusId == 2)
+            {
+                Console.WriteLine("Transfer status: approved");
+            }
+            else if (transfer.TransferStatusId == 3)
+            {
+                Console.WriteLine("Transfer status: rejected");
+            }
+
+            Console.WriteLine($"Account To: {transfer.AccountTo}");
+            Console.WriteLine($"Account From: {transfer.AccountFrom}");
+            Console.WriteLine($"Amount: {transfer.Amount:C}");
         }
     }
 }
