@@ -113,10 +113,26 @@ namespace TenmoClient
             return response.Data;
         }
 
+        public Transfer GetTransferByTransferId(int transferId)
+        {
+            RestRequest request = new RestRequest(TRANSFERS_URL + $"/{transferId}");
+            IRestResponse<Transfer> response = client.Get<Transfer>(request);
+
+            if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
+            {
+                ProcessErrorResponse(response);
+            }
+            return response.Data;
+        }
+
         public void ProcessErrorResponse(IRestResponse response)
         {
             if (response.ResponseStatus != ResponseStatus.Completed)
             {
+                if ((int)response.StatusCode == 404)
+                {
+                    throw new NotFoundException("Not found.");
+                }
                 throw new NoResponseException("Error occurred - unable to reach server.");
             }
             else if (!response.IsSuccessful)

@@ -308,5 +308,18 @@ namespace TenmoClient
             }
             return userSelection;
         }
+
+        public int PromptForTransferId()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("TRANSFER ID LOOK UP:");
+            Console.WriteLine("Please enter a valid transfer ID or hit 0 to exit.");
+            int userSelection = -1;
+            while (!int.TryParse(Console.ReadLine(), out userSelection) || (userSelection != 0 && userSelection <= 3000))
+            {
+                Console.WriteLine("Invalid input. Please enter the number of a transfer ID or enter 0 to exit.");
+            }
+            return userSelection;
+        }
     }
 }
