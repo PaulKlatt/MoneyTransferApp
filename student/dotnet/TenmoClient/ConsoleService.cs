@@ -95,7 +95,7 @@ namespace TenmoClient
 
             if (usersInfo.Count <= 1)
             {
-                Console.WriteLine("No valid users to send funds.");
+                throw new Exception("No valid user to send funds.");
             }
             else
             {
@@ -177,14 +177,14 @@ namespace TenmoClient
         }
 
         public void PrintUserTransfers(List<Transfer> myTransfers)
-        {
-            Console.WriteLine("TRANSFERS:");
+        {           
             if (myTransfers.Count == 0)
             {
                 Console.WriteLine("You currently have no transfers.");
             }
             else
             {
+                Console.WriteLine("TRANSFERS:");
                 Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 foreach (Transfer transfer in myTransfers)
                 {

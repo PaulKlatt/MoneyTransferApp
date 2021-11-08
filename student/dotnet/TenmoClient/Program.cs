@@ -139,22 +139,24 @@ namespace TenmoClient
 
                         //call console service to print list of transfers
                         consoleService.PrintUserTransfers(myTransfers);
+                        if (myTransfers.Count != 0)
+                        { 
                         Console.WriteLine("Please select a transfer ID from above or select 0 to exit.");
                         //prompt for user selection of transfer id
                         int selectedTransferId = consoleService.PromptForTransferId(myTransfers);
-                        if (selectedTransferId != 0)
-                        {
-                            Transfer selectedTransfer = new Transfer();
-                            foreach (Transfer transfer in myTransfers)
+                            if (selectedTransferId != 0)
                             {
-                                if (transfer.TransferId == selectedTransferId)
+                                Transfer selectedTransfer = new Transfer();
+                                foreach (Transfer transfer in myTransfers)
                                 {
-                                    selectedTransfer = transfer;
+                                    if (transfer.TransferId == selectedTransferId)
+                                    {
+                                        selectedTransfer = transfer;
+                                    }
                                 }
+                                //call console service to print transfer id details
+                                consoleService.PrintSelectedTransfer(selectedTransfer);
                             }
-                            //call console service to print transfer id details
-                            consoleService.PrintSelectedTransfer(selectedTransfer);
-                            
                         }
                     }
                     catch (Exception ex)
@@ -343,8 +345,8 @@ namespace TenmoClient
                                         if (amount != 0)
                                         {
                                             Transfer transfer = new Transfer();
-                                            transfer.AccountFrom = (int)receiverAccount.AccountId;
-                                            transfer.AccountTo = (int)userAccount.AccountId;
+                                            transfer.AccountTo = (int)receiverAccount.AccountId;
+                                            transfer.AccountFrom = (int)userAccount.AccountId;
                                             transfer.Amount = amount;
                                             //call api service that goes to post endpoint
                                             Transfer createdTransfer = apiService.SendAmount(transfer);
@@ -445,7 +447,7 @@ namespace TenmoClient
                     }
                     catch (Exception ex)
                     {
-                        throw ex;
+                        Console.WriteLine(ex.Message);
                     }
                 }
                 else if (menuSelection == 6)
