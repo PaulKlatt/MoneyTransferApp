@@ -82,6 +82,36 @@ namespace TenmoClient
             }
             return response.Data;
         }
+        
+        public void SetClientAuthorization()
+        {
+            client.Authenticator = new JwtAuthenticator(UserService.GetToken());
+        }
+        public Transfer ApproveTransferRequest(Transfer transfer)
+        {
+            RestRequest request = new RestRequest(TRANSFERS_URL + "/approve");
+            request.AddJsonBody(transfer);
+            IRestResponse<Transfer> response = client.Put<Transfer>(request);
+
+            if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
+            {
+                ProcessErrorResponse(response);
+            }
+            return response.Data;
+        }
+
+        public Transfer RejectTransferRequest(Transfer transfer)
+        {
+            RestRequest request = new RestRequest(TRANSFERS_URL + "/reject");
+            request.AddJsonBody(transfer);
+            IRestResponse<Transfer> response = client.Put<Transfer>(request);
+
+            if (response.ResponseStatus != ResponseStatus.Completed || !response.IsSuccessful)
+            {
+                ProcessErrorResponse(response);
+            }
+            return response.Data;
+        }
 
         public void ProcessErrorResponse(IRestResponse response)
         {

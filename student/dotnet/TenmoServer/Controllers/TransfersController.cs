@@ -11,6 +11,7 @@ using System.Transactions;
 namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
+    [Authorize]
     [ApiController]
     public class TransfersController : Controller
     {
@@ -20,16 +21,42 @@ namespace TenmoServer.Controllers
         {
             transferDao = _transferDao;
         }
-
+        // pretty these posts and the puts are supposed to be combined to be truly restful
         [HttpPost("send")]
-        //[Authorize]
         public ActionResult<Transfer> SendTransactionScope(Transfer sentTransfer)
         {
-            // How to do transactions in c#?
             Transfer newTransfer = transferDao.SendTransactionScope(sentTransfer);
             return Created($"/transfers/{newTransfer.TransferId}", newTransfer);
         }
+        [HttpPut("approve")]
+        public ActionResult<Transfer> UpdateTransactionScope(Transfer sentTransfer)
+        {
+            Transfer transferToUpdate = transferDao.GetTransfersByTransferId((int)(sentTransfer.TransferId));
+            if (transferToUpdate == null)
+            {
+                return NotFound("Transfer does not exist");
+            }
+            else
+            {
+                Transfer newTransfer = transferDao.UpdateTransactionScope(sentTransfer);
+                return Ok(newTransfer);
+            }
+        }
 
+        [HttpPut("reject")]
+        public ActionResult<Transfer> UpdateTransfer(Transfer sentTransfer)
+        {
+            Transfer transferToUpdate = transferDao.GetTransfersByTransferId((int)(sentTransfer.TransferId));
+            if (transferToUpdate == null)
+            {
+                return NotFound("Transfer does not exist");
+            }
+            else
+            {
+                Transfer newTransfer = transferDao.UpdateTransfer(sentTransfer);
+                return Ok(newTransfer);
+            }
+        }
         [HttpPost("request")]
         public ActionResult<Transfer> MakeTransferRequest(Transfer requestTransfer)
         {
@@ -38,7 +65,6 @@ namespace TenmoServer.Controllers
         }
 
         [HttpGet("users/{userId}")]
-        //[Authorize]
         public ActionResult<List<Transfer>> GetTransfersByUserId(int userId)
         {
 

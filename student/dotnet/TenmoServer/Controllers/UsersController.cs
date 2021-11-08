@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using TenmoServer.Models;
 namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
+    [Authorize]
     [ApiController]
     public class UsersController : ControllerBase
     {

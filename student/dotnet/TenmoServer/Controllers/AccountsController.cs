@@ -10,6 +10,7 @@ using TenmoServer.Models;
 namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
+    [Authorize]
     [ApiController]
     public class AccountsController : ControllerBase
     {
@@ -21,7 +22,6 @@ namespace TenmoServer.Controllers
             accountDao = _accountDao;
         }
 
-        //[Authorize]
         [HttpGet("{userId}")]
         public ActionResult<List<Account>> GetAccountsByUser(int userId)
         {

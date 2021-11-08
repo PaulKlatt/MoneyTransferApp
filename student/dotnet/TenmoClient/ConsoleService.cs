@@ -86,7 +86,7 @@ namespace TenmoClient
                     Console.WriteLine($"{validChoice}: {acc.AccountId}");
                     validChoice++;
                 }
-                Console.WriteLine("Please choose one of the accounts listed above.");
+                Console.WriteLine("Please choose one of the accounts listed above or enter 0 to exit.");
             }
         }
 
@@ -113,7 +113,6 @@ namespace TenmoClient
                     {
                         userToRemove = u;
                     }
-
                 }
                 usersInfo.Remove(userToRemove);
             }
@@ -124,52 +123,61 @@ namespace TenmoClient
             if (accounts.Count >= 1)
             {
                 int accountSelection = -1;
-                while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection <= 0 || accountSelection > accounts.Count)
+                while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection < 0 || accountSelection > accounts.Count)
                 {
-                    Console.WriteLine("Invalid input. Please enter the number of an account listed above.");
+                    Console.WriteLine("Invalid input. Please enter the number of an account listed above or 0 to exit.");
                 }
                 Console.Clear();
-                Console.WriteLine($"Your current balance in {accounts[accountSelection - 1].AccountId} is {accounts[accountSelection - 1].Balance:C}.");
+                if (accountSelection != 0)
+                {              
+                    Console.WriteLine($"Your current balance in {accounts[accountSelection - 1].AccountId} is {accounts[accountSelection - 1].Balance:C}.");
+                }
             }
         }
 
-        public void PrintNewTransfer(Transfer transfer, int recieverId, int senderId)
+        public void PrintNewTransfer(Transfer transfer, ApiUser user, UserInfo otherUser)
         {
-            Console.WriteLine("TRANSFER SUCCESSFUL!");
+            Console.Clear();
+            Console.WriteLine("TRANSFER CREATED SUCCESSFULLY!");
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             Console.WriteLine($"Transfer Id: {transfer.TransferId}");
 
             if (transfer.TransferTypeId == 1)
             {
                 Console.WriteLine("Transfer type: request");
+                if (transfer.TransferStatusId == 1)
+                {
+                    Console.WriteLine("Transfer status: pending");
+                }
+                else if (transfer.TransferStatusId == 2)
+                {
+                    Console.WriteLine("Transfer status: approved");
+                }
+                else if (transfer.TransferStatusId == 3)
+                {
+                    Console.WriteLine("Transfer status: rejected");
+                }
+                Console.WriteLine($"Requester: {user.UserId} - {user.Username}");
+                Console.WriteLine($"Account To: {transfer.AccountTo}");
+                Console.WriteLine($"Requestee: {otherUser.UserId} - {otherUser.Username}");
+                Console.WriteLine($"Account From: {transfer.AccountFrom}");
+                Console.WriteLine($"Amount: {transfer.Amount:C}");
             }
             else if (transfer.TransferTypeId == 2)
             {
                 Console.WriteLine("Tranfer type: send");
-            }
-
-            if (transfer.TransferStatusId == 1)
-            {
-                Console.WriteLine("Transfer status: pending");
-            }
-            else if (transfer.TransferStatusId == 2)
-            {
                 Console.WriteLine("Transfer status: approved");
+                Console.WriteLine($"Receiver: {otherUser.UserId} - {otherUser.Username}");
+                Console.WriteLine($"Account To: {transfer.AccountTo}");
+                Console.WriteLine($"Sender: {user.UserId} - {user.Username}");
+                Console.WriteLine($"Account From: {transfer.AccountFrom}");
+                Console.WriteLine($"Amount: {transfer.Amount:C}");
             }
-            else if (transfer.TransferStatusId == 3)
-            {
-                Console.WriteLine("Transfer status: rejected");
-            }
-
-            Console.WriteLine($"Receiver: {recieverId}");
-            Console.WriteLine($"Account To: {transfer.AccountTo}");
-            Console.WriteLine($"Sender: {senderId}");
-            Console.WriteLine($"Account From: {transfer.AccountFrom}");
-            Console.WriteLine($"Amount: {transfer.Amount:C}");
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         }
 
-        public void PrintAllUserTransfers(List<Transfer> myTransfers)
+        public void PrintUserTransfers(List<Transfer> myTransfers)
         {
-            Console.Clear();
             Console.WriteLine("TRANSFERS:");
             if (myTransfers.Count == 0)
             {
@@ -187,9 +195,10 @@ namespace TenmoClient
                     Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                 }
                 Console.WriteLine("");
-                Console.WriteLine("Please select a transfer ID from above or select 0 to exit.");
+                
             }
         }
+
         public int PromptForTransferId(List<Transfer> myTransfers)
         {
             if (myTransfers.Count >= 1)
@@ -201,26 +210,23 @@ namespace TenmoClient
                 }
 
                 int userSelection = -1;
-                while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || !transferIds.Contains(userSelection))
+                while (!int.TryParse(Console.ReadLine(), out userSelection) || (userSelection != 0 && !transferIds.Contains(userSelection)))
                 {
                     Console.WriteLine("Invalid input. Please enter the number of a transfer listed above or enter 0 to exit.");
                 }
-                if (userSelection == 0)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return userSelection;
-                }  
+                return userSelection;
             }
-            return 0;
+            else
+            {
+                throw new Exception("You currently have no transfers to view.");
+            }
+            
         }
 
         public Account PromptForAccount(List<Account> accounts, int type, bool isUser)
         {
             int accountSelection = -1;
-            Account selectedAccount = new Account();
+            Account selectedAccount = null;
             while (!int.TryParse(Console.ReadLine(), out accountSelection) || accountSelection < 0 || accountSelection > accounts.Count)
             {
                 Console.WriteLine("Invalid input. Please enter the number of an account listed above or enter 0 to exit.");
@@ -236,7 +242,7 @@ namespace TenmoClient
                     }
                     else if (type == 2)
                     {
-                        Console.WriteLine($"You will be sending from {selectedAccount.AccountId}.  It's current balance is {selectedAccount.Balance}.");
+                        Console.WriteLine($"You will be sending from {selectedAccount.AccountId}.  It's current balance is {selectedAccount.Balance:C}.");
                     }
                 }
                 else
@@ -254,7 +260,6 @@ namespace TenmoClient
             return selectedAccount;
         }
 
-
         public void PrintSelectedTransfer(Transfer transfer)
         {
             Console.Clear();
@@ -262,6 +267,7 @@ namespace TenmoClient
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             Console.WriteLine($"Transfer Id: {transfer.TransferId}");
 
+            // Could do something cool here with enumerators
             if (transfer.TransferTypeId == 1)
             {
                 Console.WriteLine("Transfer type: request");
@@ -287,6 +293,20 @@ namespace TenmoClient
             Console.WriteLine($"Account From: {transfer.AccountFrom}");
             Console.WriteLine($"Amount: {transfer.Amount:C}");
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        }
+        public int PromptForRequestUpdate()
+        {
+            Console.WriteLine("What would you like to do to this request?");
+            Console.WriteLine("1.  Approve");
+            Console.WriteLine("2.  Reject");
+            Console.WriteLine();
+            Console.WriteLine("Please enter the number of the action you would like to take above or enter 0 to cancel.");
+            int userSelection = -1;
+            while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || userSelection > 2)
+            {
+                Console.WriteLine("Invalid input. Please enter the number of an account listed above or enter 0 to exit.");
+            }
+            return userSelection;
         }
     }
 }
