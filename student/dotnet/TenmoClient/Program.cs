@@ -103,6 +103,7 @@ namespace TenmoClient
                 Console.WriteLine("4: Send TE bucks");
                 Console.WriteLine("5: Request TE bucks");
                 Console.WriteLine("6: Log in as different user");
+                Console.WriteLine("7: Look up transfer details by transfer ID");
                 Console.WriteLine("0: Exit");
                 Console.WriteLine("---------");
                 Console.Write("Please choose an option: ");
@@ -456,6 +457,23 @@ namespace TenmoClient
                     UserService.SetLogin(new ApiUser()); //wipe out previous login info
                     Console.Clear();
                     menuSelection = 0;
+                }
+                else if (menuSelection == 7)
+                {
+                    Console.WriteLine("");
+                    try
+                    {
+                        int userSelection = consoleService.PromptForTransferId();
+                        if (userSelection != 0)
+                        {
+                            Transfer selectedTransfer = apiService.GetTransferByTransferId(userSelection);
+                            consoleService.PrintSelectedTransfer(selectedTransfer);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
                 else
                 {
