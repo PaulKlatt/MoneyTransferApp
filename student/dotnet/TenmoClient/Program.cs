@@ -179,15 +179,16 @@ namespace TenmoClient
                             {
                                 foreach (Account acc in myAccounts)
                                 {
+                                    // move this out of the foreachloop
                                     if (transfer.TransferStatusId == 1)
                                     {
                                         if (transfer.AccountTo == acc.AccountId)
                                         {
-                                            pendingReceivedTransfers.Add(transfer);
+                                            pendingSentTransfers.Add(transfer);
                                         }
                                         else if (transfer.AccountFrom == acc.AccountId)
                                         {
-                                            pendingSentTransfers.Add(transfer);
+                                            pendingReceivedTransfers.Add(transfer);
                                         }
                                     }
                                 }
@@ -234,7 +235,7 @@ namespace TenmoClient
                                                 Account sendingAccount = new Account();
                                                 foreach (Account acc in myAccounts)
                                                 {
-                                                    if (requestToUpdate.AccountTo == acc.AccountId)
+                                                    if (requestToUpdate.AccountFrom == acc.AccountId)
                                                     {
                                                         sendingAccount = acc;
                                                     }
@@ -255,6 +256,14 @@ namespace TenmoClient
                                                 }
                                                 // call api to send request to update a transfer,
                                             }
+                                            if (updateSelection == 2)
+                                            {
+                                                requestToUpdate.TransferStatusId = 3;
+                                                Transfer updatedTransfer = apiService.RejectTransferRequest(requestToUpdate);
+                                                Console.WriteLine("REQUEST DENIED!");
+
+                                                consoleService.PrintSelectedTransfer(updatedTransfer);
+                                            }
                                         }
                                     }
                                 }
@@ -263,7 +272,7 @@ namespace TenmoClient
                         else
                         {
                             Console.WriteLine();
-                            Console.WriteLine("There have no currently pending requests.");
+                            Console.WriteLine("You currently have no pending requests.");
                         }
 
                     }
@@ -290,7 +299,7 @@ namespace TenmoClient
                         else
                         {
                             // Maybe come back and replace with a custom exception?
-                            throw new Exception("You have no valid accounts from which to send TE bucks or enter 0 to cancel.");
+                            throw new Exception("You have no valid accounts from which to send TE bucks.");
                         }
                         if (userAccount != null)
                         {
@@ -371,7 +380,7 @@ namespace TenmoClient
                         else
                         {
                             // Maybe come back and replace with a custom exception?
-                            throw new Exception("You have no valid accounts from which to send TE bucks.");
+                            throw new Exception("You have no valid accounts to receive TE bucks.");
                         }
                         if (userAccount != null)
                         {
@@ -422,8 +431,8 @@ namespace TenmoClient
                                         Transfer transfer = new Transfer();
                                         transfer.TransferStatusId = 1;
                                         transfer.TransferTypeId = 1;
-                                        transfer.AccountTo = (int)requestFromAccount.AccountId;
-                                        transfer.AccountFrom = (int)userAccount.AccountId;
+                                        transfer.AccountFrom = (int)requestFromAccount.AccountId;
+                                        transfer.AccountTo = (int)userAccount.AccountId;
                                         transfer.Amount = amount;
                                         //call api service that goes to post endpoint
                                         Transfer newTransfer = apiService.MakeNewRequest(transfer);

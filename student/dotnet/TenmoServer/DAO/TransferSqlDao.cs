@@ -47,9 +47,9 @@ namespace TenmoServer.DAO
                         command2.Parameters.AddWithValue("@newId", newId);
 
                         SqlDataReader reader = command2.ExecuteReader();
-                        if(reader.Read())
+                        if (reader.Read())
                         {
-                           newTransfer = GetTransferFromReader(reader);
+                            newTransfer = GetTransferFromReader(reader);
                         }
                     }
                     scope.Complete();
@@ -57,7 +57,7 @@ namespace TenmoServer.DAO
             }
             catch (SqlException ex)
             {
-                throw;
+                throw ex;
             }
             return newTransfer;
         }
@@ -78,22 +78,17 @@ namespace TenmoServer.DAO
                                                             "UPDATE dbo.accounts SET balance = balance + @amount " +
                                                             "WHERE account_id = @accountTo " +
                                                             "UPDATE dbo.transfers SET transfer_status_id = @transferStatusId " +
-                                                            "WHERE transfer_id = @transferID", connection);
+                                                            "WHERE transfer_id = @transferID " +
+                                                            "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                                                            "FROM dbo.transfers " +
+                                                            "WHERE transfer_id = @transferId", connection);
                         command.Parameters.AddWithValue("@transferId", transfer.TransferId);
                         command.Parameters.AddWithValue("@transferStatusId", transfer.TransferStatusId);
                         command.Parameters.AddWithValue("@accountFrom", transfer.AccountFrom);
                         command.Parameters.AddWithValue("@accountTo", transfer.AccountTo);
                         command.Parameters.AddWithValue("@amount", transfer.Amount);
-                        
 
-                        command.ExecuteNonQuery();
-
-                        SqlCommand command2 = new SqlCommand("SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
-                                                            "FROM dbo.transfers " +
-                                                            "WHERE transfer_id = @transferId", connection);
-                        command2.Parameters.AddWithValue("@transferId", transfer.TransferId);
-
-                        SqlDataReader reader = command2.ExecuteReader();
+                        SqlDataReader reader = command.ExecuteReader();
                         if (reader.Read())
                         {
                             updatedTransfer = GetTransferFromReader(reader);
@@ -104,11 +99,40 @@ namespace TenmoServer.DAO
             }
             catch (SqlException ex)
             {
-                throw;
+                throw ex;
             }
             return updatedTransfer;
         }
 
+        public Transfer UpdateTransfer(Transfer transfer)
+        {
+            Transfer updatedTransfer = new Transfer();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    SqlCommand command = new SqlCommand("UPDATE dbo.transfers SET transfer_status_id = @transferStatusId " +
+                                                        "WHERE transfer_id = @transferId " +
+                                                        "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                                                        "FROM dbo.transfers " +
+                                                        "WHERE transfer_id = @transferId", connection);
+                    command.Parameters.AddWithValue("@transferId", transfer.TransferId);
+                    command.Parameters.AddWithValue("@transferStatusId", transfer.TransferStatusId);
+                    SqlDataReader reader = command.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        updatedTransfer = GetTransferFromReader(reader);
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw ex;
+            }
+            return updatedTransfer;
+        }
         public Transfer MakeTransferRequest(Transfer requestTransfer)
         {
             Transfer newTransfer = new Transfer();
@@ -148,8 +172,8 @@ namespace TenmoServer.DAO
         public List<Transfer> GetTransfersByUserId(int userId)
         {
             List<Transfer> myTransfers = new List<Transfer>();
-            try 
-            {            
+            try
+            {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
@@ -175,6 +199,36 @@ namespace TenmoServer.DAO
                 throw ex;
             }
             return myTransfers;
+        }
+
+        public Transfer GetTransfersByTransferId(int transferId)
+        {
+            Transfer transfer = null;
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    SqlCommand command = new SqlCommand("SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                                                        "FROM dbo.transfers " +
+                                                        "WHERE transfer_id = @transferId", connection);
+                    command.Parameters.AddWithValue("@transferId", transferId);
+
+
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        transfer = (GetTransferFromReader(reader));
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw ex;
+            }
+            return transfer;
         }
 
         private Transfer GetTransferFromReader(SqlDataReader reader)

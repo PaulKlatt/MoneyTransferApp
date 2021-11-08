@@ -22,7 +22,6 @@ namespace TenmoServer.Controllers
             accountDao = _accountDao;
         }
 
-        //[Authorize]
         [HttpGet("{userId}")]
         public ActionResult<List<Account>> GetAccountsByUser(int userId)
         {

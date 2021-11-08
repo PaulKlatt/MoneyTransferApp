@@ -21,7 +21,7 @@ namespace TenmoServer.Controllers
         {
             transferDao = _transferDao;
         }
-
+        // pretty these posts and the puts are supposed to be combined to be truly restful
         [HttpPost("send")]
         public ActionResult<Transfer> SendTransactionScope(Transfer sentTransfer)
         {
@@ -31,12 +31,32 @@ namespace TenmoServer.Controllers
         [HttpPut("approve")]
         public ActionResult<Transfer> UpdateTransactionScope(Transfer sentTransfer)
         {
-            // Just realized we might want a transferdao.gettransferbyid just so we can double check this transfer exists
-            Transfer newTransfer = transferDao.UpdateTransactionScope(sentTransfer);
-
-            return Ok(newTransfer);
+            Transfer transferToUpdate = transferDao.GetTransfersByTransferId((int)(sentTransfer.TransferId));
+            if (transferToUpdate == null)
+            {
+                return NotFound("Transfer does not exist");
+            }
+            else
+            {
+                Transfer newTransfer = transferDao.UpdateTransactionScope(sentTransfer);
+                return Ok(newTransfer);
+            }
         }
 
+        [HttpPut("reject")]
+        public ActionResult<Transfer> UpdateTransfer(Transfer sentTransfer)
+        {
+            Transfer transferToUpdate = transferDao.GetTransfersByTransferId((int)(sentTransfer.TransferId));
+            if (transferToUpdate == null)
+            {
+                return NotFound("Transfer does not exist");
+            }
+            else
+            {
+                Transfer newTransfer = transferDao.UpdateTransfer(sentTransfer);
+                return Ok(newTransfer);
+            }
+        }
         [HttpPost("request")]
         public ActionResult<Transfer> MakeTransferRequest(Transfer requestTransfer)
         {
