@@ -11,6 +11,7 @@ using System.Transactions;
 namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
+    [Authorize]
     [ApiController]
     public class TransfersController : Controller
     {
@@ -22,12 +23,18 @@ namespace TenmoServer.Controllers
         }
 
         [HttpPost("send")]
-        //[Authorize]
         public ActionResult<Transfer> SendTransactionScope(Transfer sentTransfer)
         {
-            // How to do transactions in c#?
             Transfer newTransfer = transferDao.SendTransactionScope(sentTransfer);
             return Created($"/transfers/{newTransfer.TransferId}", newTransfer);
+        }
+        [HttpPut("approve")]
+        public ActionResult<Transfer> UpdateTransactionScope(Transfer sentTransfer)
+        {
+            // Just realized we might want a transferdao.gettransferbyid just so we can double check this transfer exists
+            Transfer newTransfer = transferDao.UpdateTransactionScope(sentTransfer);
+
+            return Ok(newTransfer);
         }
 
         [HttpPost("request")]
@@ -38,7 +45,6 @@ namespace TenmoServer.Controllers
         }
 
         [HttpGet("users/{userId}")]
-        //[Authorize]
         public ActionResult<List<Transfer>> GetTransfersByUserId(int userId)
         {
 

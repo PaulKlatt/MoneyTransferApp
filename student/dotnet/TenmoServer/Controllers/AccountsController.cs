@@ -10,6 +10,7 @@ using TenmoServer.Models;
 namespace TenmoServer.Controllers
 {
     [Route("[controller]")]
+    [Authorize]
     [ApiController]
     public class AccountsController : ControllerBase
     {

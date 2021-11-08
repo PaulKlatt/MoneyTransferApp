@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RestSharp.Authenticators;
+using System;
 using System.Collections.Generic;
 using TenmoClient.Models;
 using TenmoServer.Models;
@@ -39,9 +40,13 @@ namespace TenmoClient
                         {
                             LoginUser loginUser = consoleService.PromptForLogin();
                             user = authService.Login(loginUser);
+
+
                             if (user != null)
                             {
                                 UserService.SetLogin(user);
+                                // Set jwt authentication, not sure if it makes sense to be here, but seemed like the quickest fix
+                                apiService.SetClientAuthorization();
                             }
                             else
                             {
@@ -88,7 +93,7 @@ namespace TenmoClient
                     Console.WriteLine("Welcome to TEnmo! Please make a selection: ");
                     firstTime = false;
                 }
-                else 
+                else
                 {
                     Console.WriteLine("Please choose another selection.");
                 }
@@ -113,6 +118,7 @@ namespace TenmoClient
                         List<Account> accounts = apiService.ViewAccountsByUserId(user.UserId);
                         consoleService.PrintAccounts(accounts);
 
+                        //I think we can get rid of this method and call prompt for account if we can change up the writelines there.
                         consoleService.PromptForAccountThenPrintAccountBalance(accounts);
 
                     }
@@ -132,8 +138,8 @@ namespace TenmoClient
                         List<Transfer> myTransfers = apiService.GetTransfersByUserId(user.UserId);
 
                         //call console service to print list of transfers
-                        consoleService.PrintAllUserTransfers(myTransfers);
-
+                        consoleService.PrintUserTransfers(myTransfers);
+                        Console.WriteLine("Please select a transfer ID from above or select 0 to exit.");
                         //prompt for user selection of transfer id
                         int selectedTransferId = consoleService.PromptForTransferId(myTransfers);
                         if (selectedTransferId != 0)
@@ -148,6 +154,7 @@ namespace TenmoClient
                             }
                             //call console service to print transfer id details
                             consoleService.PrintSelectedTransfer(selectedTransfer);
+                            
                         }
                     }
                     catch (Exception ex)
@@ -157,10 +164,117 @@ namespace TenmoClient
                 }
                 else if (menuSelection == 3)
                 {
+                    try
+                    {
+                        //pretty sure we need another end point, or make the end point more general on the controller side, but we
+                        //were kinda running out of time.  Feels bad to get so much data from the database and not use it,
+                        //wanna limit that if we could
+                        List<Transfer> myTransfers = apiService.GetTransfersByUserId(user.UserId);
+                        List<Transfer> pendingSentTransfers = new List<Transfer>();
+                        List<Transfer> pendingReceivedTransfers = new List<Transfer>();
+                        List<Account> myAccounts = apiService.ViewAccountsByUserId(user.UserId);
+                        if (myTransfers.Count >= 1)
+                        {
+                            foreach (Transfer transfer in myTransfers)
+                            {
+                                foreach (Account acc in myAccounts)
+                                {
+                                    if (transfer.TransferStatusId == 1)
+                                    {
+                                        if (transfer.AccountTo == acc.AccountId)
+                                        {
+                                            pendingReceivedTransfers.Add(transfer);
+                                        }
+                                        else if (transfer.AccountFrom == acc.AccountId)
+                                        {
+                                            pendingSentTransfers.Add(transfer);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("You have no transfers in your accounts.");
+                        }
+                        if (pendingReceivedTransfers.Count != 0 || pendingReceivedTransfers.Count != 0)
+                        {
+                            if (pendingSentTransfers.Count >= 0)
+                            {
+                                Console.WriteLine("WAITING ON A RESPONSE FOR THESE REQUESTS");
+                                Console.WriteLine();
+                                consoleService.PrintUserTransfers(pendingSentTransfers);
+                                Console.WriteLine();
+                            }
+                            if (pendingReceivedTransfers.Count >= 0)
+                            {
+                                Console.WriteLine("PENDING REQUESTS RECEIVED");
+                                consoleService.PrintUserTransfers(pendingReceivedTransfers);
+                                Console.WriteLine();
+                                Console.WriteLine("Please select a transfer from the pending transfer list or enter 0 to cancel.");
+                                int userSelection = consoleService.PromptForTransferId(pendingReceivedTransfers);
+                                Transfer requestToUpdate = null;
+                                if (userSelection != 0)
+                                {
+                                    foreach (Transfer transfer in pendingReceivedTransfers)
+                                    {
+                                        if (transfer.TransferId == userSelection)
+                                        {
+                                            requestToUpdate = transfer;
+                                        }
+                                    }
+                                    if (requestToUpdate != null)
+                                    {
+                                        consoleService.PrintSelectedTransfer(requestToUpdate);
+                                        int updateSelection = consoleService.PromptForRequestUpdate();
+                                        if (updateSelection != 0)
+                                        {
+                                            if (updateSelection == 1)
+                                            {
+                                                Account sendingAccount = new Account();
+                                                foreach (Account acc in myAccounts)
+                                                {
+                                                    if (requestToUpdate.AccountTo == acc.AccountId)
+                                                    {
+                                                        sendingAccount = acc;
+                                                    }
+                                                }
 
+                                                if (requestToUpdate.Amount < sendingAccount.Balance)
+                                                {
+                                                    requestToUpdate.TransferStatusId = 2;
+                                                    Transfer updatedTransfer = apiService.ApproveTransferRequest(requestToUpdate);
+                                                    Console.WriteLine("REQUEST APPROVED!");
+                                                    Console.WriteLine("TE bucks have been sent.");
+
+                                                    consoleService.PrintSelectedTransfer(updatedTransfer);
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("You do not have enough TE bucks in this account to approve the request.  Either reject the request or come back when you have gained more TE bucks.");
+                                                }
+                                                // call api to send request to update a transfer,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("There have no currently pending requests.");
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
                 else if (menuSelection == 4)
                 {
+                    Console.WriteLine();
                     try
                     {
                         Account receiverAccount = new Account();
@@ -176,58 +290,62 @@ namespace TenmoClient
                         else
                         {
                             // Maybe come back and replace with a custom exception?
-                            throw new Exception("You have no valid accounts from which to send TE bucks.");
+                            throw new Exception("You have no valid accounts from which to send TE bucks or enter 0 to cancel.");
                         }
-                        //Get the receiverAccount
-                        List<UserInfo> usersInfo = apiService.GetAllUsers();
-                        consoleService.PrintUserList(usersInfo, user);
-                        Console.WriteLine("Please choose a user to receive your TE bucks.");
-
-                        if (usersInfo.Count >= 1)
+                        if (userAccount != null)
                         {
-                            int userSelection = -1;
-                            while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || userSelection > usersInfo.Count)
+                            //Get the receiverAccount
+                            List<UserInfo> usersInfo = apiService.GetAllUsers();
+                            consoleService.PrintUserList(usersInfo, user);
+                            Console.WriteLine("Please choose a user to receive your TE bucks or enter 0 to cancel.");
+
+                            if (usersInfo.Count >= 1)
                             {
-                                Console.WriteLine("Invalid input. Please enter the number of a user listed above.");
+                                int userSelection = -1;
+                                while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || userSelection > usersInfo.Count)
+                                {
+                                    Console.WriteLine("Invalid input. Please enter the number of a user listed above or 0 to cancel.");
+                                }
+                                if (userSelection != 0)
+                                {
+                                    UserInfo receiver = usersInfo[userSelection - 1];
+                                    List<Account> receiverAccounts = apiService.ViewAccountsByUserId(receiver.UserId);
+
+                                    consoleService.PrintAccounts(receiverAccounts);
+                                    if (receiverAccounts.Count >= 1)
+                                    {
+                                        receiverAccount = consoleService.PromptForAccount(receiverAccounts, 2, false);
+                                    }
+                                    else
+                                    {
+                                        // Maybe custom ex
+                                        throw new Exception("The user has no valid accounts to receive TE bucks.");
+                                    }
+                                    if (receiverAccount != null)
+                                    {
+
+                                        //Get the amount to send
+                                        Console.WriteLine("Please enter an amount to send or enter 0 to cancel.");
+
+                                        while (!decimal.TryParse(Console.ReadLine(), out amount) || amount < 0 || amount > userAccount.Balance)
+                                        {
+                                            Console.WriteLine("Invalid input. Please enter a number less than or equal to your current balance or enter 0 to cancel.");
+                                        }
+                                        if (amount != 0)
+                                        {
+                                            Transfer transfer = new Transfer();
+                                            transfer.AccountFrom = (int)receiverAccount.AccountId;
+                                            transfer.AccountTo = (int)userAccount.AccountId;
+                                            transfer.Amount = amount;
+                                            //call api service that goes to post endpoint
+                                            Transfer createdTransfer = apiService.SendAmount(transfer);
+
+                                            //call console service, feed it created transfer
+                                            consoleService.PrintNewTransfer(createdTransfer, user, receiver);
+                                        }
+                                    }
+                                }
                             }
-
-                            List<Account> receiverAccounts = apiService.ViewAccountsByUserId(usersInfo[userSelection - 1].UserId);
-
-                            consoleService.PrintAccounts(receiverAccounts);
-                            if (receiverAccounts.Count >= 1)
-                            {
-                                receiverAccount = consoleService.PromptForAccount(receiverAccounts, 2, false);
-                            }
-                            else
-                            {
-                                // Maybe custom ex
-                                throw new Exception("The user has no valid accounts to receive TE bucks.");
-                            }
-                        }
-
-                        //Get the amount to send
-                        Console.WriteLine("Please enter an amount to send.");
-
-                        while (!decimal.TryParse(Console.ReadLine(), out amount) || amount <= 0 || amount > userAccount.Balance)
-                        {
-                            Console.WriteLine("Invalid input. Please enter a number less than or equal to your current balance or enter 0 to cancel.");
-                        }
-                        if (amount == 0)
-                        {
-                            // Not sure what message to put here, not really an error, just needed to get to the catch?
-                            throw new Exception();
-                        }
-                        else
-                        {
-                            Transfer transfer = new Transfer();
-                            transfer.AccountTo = (int)receiverAccount.AccountId;
-                            transfer.AccountFrom = (int)userAccount.AccountId;
-                            transfer.Amount = amount;
-                            //call api service that goes to post endpoint
-                            Transfer createdTransfer = apiService.SendAmount(transfer);
-
-                            //call console service, feed it created transfer
-                            consoleService.PrintNewTransfer(createdTransfer, receiverAccount.UserId, user.UserId);
                         }
                     }
                     catch (Exception ex)
@@ -255,52 +373,66 @@ namespace TenmoClient
                             // Maybe come back and replace with a custom exception?
                             throw new Exception("You have no valid accounts from which to send TE bucks.");
                         }
-                        //get requester from account
-                        List<UserInfo> usersInfo = apiService.GetAllUsers();
-                        consoleService.PrintUserList(usersInfo, user);
-                        Console.WriteLine("Please choose a user to request TE bucks from.");
-
-                        if (usersInfo.Count >= 1)
+                        if (userAccount != null)
                         {
+                            //get requester from account
+                            List<UserInfo> usersInfo = apiService.GetAllUsers();
+                            consoleService.PrintUserList(usersInfo, user);
+                            Console.WriteLine("Please choose a user to request TE bucks from or enter 0 to cancel.");
                             int userSelection = -1;
-                            while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || userSelection > usersInfo.Count)
+                            if (usersInfo.Count >= 1)
                             {
-                                Console.WriteLine("Invalid input. Please enter the number of a user listed above.");
-                            }
+                                //Could probably use a PromptForUser method
 
-                            List<Account> requestFromAccounts = apiService.ViewAccountsByUserId(usersInfo[userSelection - 1].UserId);
-
-                            consoleService.PrintAccounts(requestFromAccounts);
-                            if (requestFromAccounts.Count >= 1)
-                            {
-                                requestFromAccount = consoleService.PromptForAccount(requestFromAccounts, 1, false);
+                                while (!int.TryParse(Console.ReadLine(), out userSelection) || userSelection < 0 || userSelection > usersInfo.Count)
+                                {
+                                    Console.WriteLine("Invalid input. Please enter the number of a user listed above.");
+                                }
                             }
                             else
                             {
-                                // Maybe custom ex
-                                throw new Exception("The user has no valid accounts to receive TE bucks.");
+                                throw new Exception("There are no valid users to request TE bucks from.");
+                            }
+                            if (userSelection != 0)
+                            {
+                                UserInfo requestFromUser = usersInfo[userSelection - 1];
+                                List<Account> requestFromAccounts = apiService.ViewAccountsByUserId(requestFromUser.UserId);
+
+                                consoleService.PrintAccounts(requestFromAccounts);
+                                if (requestFromAccounts.Count >= 1)
+                                {
+                                    requestFromAccount = consoleService.PromptForAccount(requestFromAccounts, 1, false);
+                                }
+                                else
+                                {
+                                    // Maybe custom ex
+                                    throw new Exception("The user has no valid accounts to request TE bucks from.");
+                                }
+                                if (requestFromAccount != null)
+                                {
+                                    //Get the amount to send
+                                    Console.WriteLine("Please enter an amount to request or 0 to cancel.");
+
+                                    while (!decimal.TryParse(Console.ReadLine(), out amount) || amount < 0)
+                                    {
+                                        Console.WriteLine("Invalid input. Please enter a number a valid number to request or enter 0 to cancel.");
+                                    }
+                                    if (amount != 0)
+                                    {
+                                        Transfer transfer = new Transfer();
+                                        transfer.TransferStatusId = 1;
+                                        transfer.TransferTypeId = 1;
+                                        transfer.AccountTo = (int)requestFromAccount.AccountId;
+                                        transfer.AccountFrom = (int)userAccount.AccountId;
+                                        transfer.Amount = amount;
+                                        //call api service that goes to post endpoint
+                                        Transfer newTransfer = apiService.MakeNewRequest(transfer);
+                                        consoleService.PrintNewTransfer(newTransfer, user, requestFromUser);
+                                        Console.WriteLine("Request sent - currently pending.");
+                                    }
+                                }
                             }
                         }
-                        //Get the amount to send
-                        Console.WriteLine("Please enter an amount to request.");
-
-                        while (!decimal.TryParse(Console.ReadLine(), out amount) || amount < 0)
-                        {
-                            Console.WriteLine("Invalid input. Please enter a number a valid number to request or enter 0 to cancel.");
-                        }
-                        if (amount != 0)
-                        {
-                            Transfer transfer = new Transfer();
-                            transfer.TransferStatusId = 1;
-                            transfer.TransferTypeId = 1;
-                            transfer.AccountTo = (int)requestFromAccount.AccountId;
-                            transfer.AccountFrom = (int)userAccount.AccountId;
-                            transfer.Amount = amount;
-                            //call api service that goes to post endpoint
-                            Transfer newTransfer = apiService.MakeNewRequest(transfer);
-                            Console.WriteLine("Request sent - currently pending.");
-                        }
-
                     }
                     catch (Exception ex)
                     {
